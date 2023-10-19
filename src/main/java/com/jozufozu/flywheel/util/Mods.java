@@ -3,7 +3,7 @@ package com.jozufozu.flywheel.util;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import net.minecraftforge.fml.ModList;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * For compatibility with and without another mod present, we have to define load conditions of the specific code
@@ -21,7 +21,7 @@ public enum Mods {
 	 * @return a boolean of whether the mod is loaded or not based on mod id
 	 */
 	public boolean isLoaded() {
-		return ModList.get().isLoaded(id);
+		return FabricLoader.getInstance().isModLoaded(id);
 	}
 
 	/**

@@ -348,10 +348,6 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	public void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
 	}
 
-	@Override
-	public void playSeededSound(Player player, double x, double y, double z, Holder<SoundEvent> soundEvent,
-			SoundSource soundSource, float volume, float pitch, long seed) {
-	}
 
 	@Override
 	public void playSeededSound(Player player, Entity entity, Holder<SoundEvent> soundEvent, SoundSource soundSource,
