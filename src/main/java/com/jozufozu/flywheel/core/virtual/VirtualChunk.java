@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -170,7 +171,7 @@ public class VirtualChunk extends ChunkAccess {
 		return null;
 	}
 
-	@Override
+	//@Override
 	public Stream<BlockPos> getLights() {
 		return world.blockStates.entrySet()
 			.stream()

@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -108,7 +109,7 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 
 		nonEmptyBlockCounts.clear();
 
-		runLightEngine();
+		runLightingEngine();
 	}
 
 	public void setBlockEntities(Collection<BlockEntity> blockEntities) {
@@ -120,23 +121,7 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	 * Run this after you're done using setBlock().
 	 */
 	public void runLightingEngine() {
-		blockStates.forEach((pos, state) -> {
-			int light = state.getLightBlock(this, pos);
-			if (light > 0) {
-				lightEngine.onBlockEmissionIncrease(pos, light);
-			}
-		});
-
-		lighter.runLightUpdates();
-	}
-
-	public void setBlockEntities(Collection<BlockEntity> blockEntities) {
-		besAdded.clear();
-		blockEntities.forEach(be -> besAdded.put(be.getBlockPos(), be));
-	}
-
-	public void clear() {
-		blocksAdded.clear();
+		lightEngine.runLightUpdates();
 	}
 
 	// MEANINGFUL OVERRIDES
@@ -186,7 +171,7 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 			lightEngine.updateSectionStatus(sectionPos, nowEmpty);
 		}
 
-		lighter.checkBlock(pos);
+		lightEngine.checkBlock(pos);
 
 		return true;
 	}
@@ -218,6 +203,11 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 			return Fluids.EMPTY.defaultFluidState();
 		}
 		return getBlockState(pos).getFluidState();
+	}
+
+	@Override
+	public void playSeededSound(@org.jetbrains.annotations.Nullable Player player, double d, double e, double f, Holder<SoundEvent> holder, SoundSource soundSource, float g, float h, long l) {
+
 	}
 
 	@Override
@@ -352,8 +342,8 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	}
 
 	@Override
-	public void playSeededSound(Player player, Entity entity, SoundEvent soundEvent, SoundSource soundSource,
-			float volume, float pitch, long seed) {
+	public void playSeededSound(@org.jetbrains.annotations.Nullable Player player, Entity entity, Holder<SoundEvent> holder, SoundSource soundSource, float f, float g, long l) {
+
 	}
 
 	@Override
