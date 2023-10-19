@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -12,10 +13,10 @@ import com.jozufozu.flywheel.api.FlywheelWorld;
 
 import it.unimi.dsi.fastutil.objects.Object2ShortMap;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.sounds.SoundEvent;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -109,7 +111,7 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 
 		nonEmptyBlockCounts.clear();
 
-		runLightingEngine();
+		runLightEngine();
 	}
 
 	public void setBlockEntities(Collection<BlockEntity> blockEntities) {
@@ -120,7 +122,17 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	/**
 	 * Run this after you're done using setBlock().
 	 */
-	public void runLightingEngine() {
+	public void runLightEngine() {
+		Set<ChunkPos> chunkPosSet = new ObjectOpenHashSet<>();
+		nonEmptyBlockCounts.object2ShortEntrySet().forEach(entry -> {
+			if (entry.getShortValue() > 0) {
+				chunkPosSet.add(entry.getKey().chunk());
+			}
+		});
+		for (ChunkPos chunkPos : chunkPosSet) {
+			lightEngine.propagateLightSources(chunkPos);
+		}
+
 		lightEngine.runLightUpdates();
 	}
 
@@ -315,8 +327,8 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	}
 
 	@Override
-	public RegistryAccess registryAccess() {
-		return level.registryAccess();
+	public FeatureFlagSet enabledFeatures() {
+		return level.enabledFeatures();
 	}
 
 	// ADDITIONAL OVERRRIDES
@@ -337,13 +349,13 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	}
 
 	@Override
-	public void playSeededSound(Player player, double x, double y, double z, SoundEvent soundEvent,
+	public void playSeededSound(Player player, double x, double y, double z, Holder<SoundEvent> soundEvent,
 			SoundSource soundSource, float volume, float pitch, long seed) {
 	}
 
 	@Override
-	public void playSeededSound(@org.jetbrains.annotations.Nullable Player player, Entity entity, Holder<SoundEvent> holder, SoundSource soundSource, float f, float g, long l) {
-
+	public void playSeededSound(Player player, Entity entity, Holder<SoundEvent> soundEvent, SoundSource soundSource,
+			float volume, float pitch, long seed) {
 	}
 
 	@Override
@@ -387,6 +399,16 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	@Override
 	public List<? extends Player> players() {
 		return Collections.emptyList();
+	}
+
+	// Override Starlight's ExtendedWorld interface methods:
+
+	public LevelChunk getChunkAtImmediately(final int chunkX, final int chunkZ) {
+		return chunkSource.getChunk(chunkX, chunkZ, false);
+	}
+
+	public ChunkAccess getAnyChunkImmediately(final int chunkX, final int chunkZ) {
+		return chunkSource.getChunk(chunkX, chunkZ);
 	}
 
 	// Intentionally copied from LevelHeightAccessor. Lithium overrides these methods so we need to, too.
@@ -434,10 +456,5 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	@Override
 	public int getSectionYFromSectionIndex(int sectionIndex) {
 		return sectionIndex + this.getMinSection();
-	}
-
-	@Override
-	public FeatureFlagSet enabledFeatures() {
-		return FeatureFlagSet.of();
 	}
 }

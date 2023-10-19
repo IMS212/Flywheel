@@ -8,6 +8,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.jozufozu.flywheel.util.Mods;
+
+import ca.spottedleaf.starlight.common.chunk.ExtendedChunk;
+import ca.spottedleaf.starlight.common.light.StarLightEngine;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.shorts.ShortList;
@@ -171,17 +175,15 @@ public class VirtualChunk extends ChunkAccess {
 		return null;
 	}
 
-	//@Override
-	public Stream<BlockPos> getLights() {
-		return world.blockStates.entrySet()
-			.stream()
-			.filter(it -> {
-				BlockPos blockPos = it.getKey();
-				boolean chunkContains = SectionPos.blockToSectionCoord(blockPos.getX()) == chunkPos.x && SectionPos.blockToSectionCoord(blockPos.getZ()) == chunkPos.z;
-				return chunkContains && it.getValue()
-					.getLightBlock(world, blockPos) != 0;
-			})
-			.map(Map.Entry::getKey);
+	@Override
+	public void findBlocks(BiPredicate<BlockState, BlockPos> predicate, BiConsumer<BlockPos, BlockState> consumer) {
+		world.blockStates.forEach((pos, state) -> {
+			if (SectionPos.blockToSectionCoord(pos.getX()) == chunkPos.x && SectionPos.blockToSectionCoord(pos.getZ()) == chunkPos.z) {
+				if (predicate.test(state, pos)) {
+					consumer.accept(pos, state);
+				}
+			}
+		});
 	}
 
 	@Override
