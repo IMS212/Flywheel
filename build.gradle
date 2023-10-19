@@ -27,10 +27,6 @@ repositories {
         }
     }
     maven {
-        name 'tterrag maven'
-        url 'https://maven.tterrag.com/'
-    }
-    maven {
         url 'https://maven.parchmentmc.org/'
     }
     maven {

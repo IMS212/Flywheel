@@ -188,7 +188,7 @@ public class VirtualChunk extends ChunkAccess {
 				BlockPos blockPos = it.getKey();
 				boolean chunkContains = SectionPos.blockToSectionCoord(blockPos.getX()) == chunkPos.x && SectionPos.blockToSectionCoord(blockPos.getZ()) == chunkPos.z;
 				return chunkContains && it.getValue()
-					.getLightEmission(world, blockPos) != 0;
+					.getLightBlock(world, blockPos) != 0;
 			})
 			.map(Map.Entry::getKey);
 	}

@@ -121,7 +121,7 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 	 */
 	public void runLightEngine() {
 		blockStates.forEach((pos, state) -> {
-			int light = state.getLightEmission(this, pos);
+			int light = state.getLightBlock(this, pos);
 			if (light > 0) {
 				lightEngine.onBlockEmissionIncrease(pos, light);
 			}
@@ -330,11 +330,6 @@ public class VirtualRenderWorld extends Level implements FlywheelWorld {
 
 	@Override
 	public boolean isLoaded(BlockPos pos) {
-		return true;
-	}
-
-	@Override
-	public boolean isAreaLoaded(BlockPos center, int range) {
 		return true;
 	}
 
