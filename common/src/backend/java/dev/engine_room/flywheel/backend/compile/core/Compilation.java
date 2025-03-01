@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
 
 import dev.engine_room.flywheel.backend.compile.FlwPrograms;
@@ -29,11 +30,16 @@ public class Compilation {
 	private final List<SourceFile> files = new ArrayList<>();
 	private final StringBuilder generatedSource = new StringBuilder();
 	private final StringBuilder fullSource = new StringBuilder();
+	@Nullable
+	private String finalizedSource = null;
 	private int generatedLines = 0;
 
 	public ShaderResult compile(ShaderType shaderType, String name) {
+		if (this.finalizedSource == null) {
+			throw new IllegalStateException("Source has not been finalized.");
+		}
 		int handle = GL20.glCreateShader(shaderType.glEnum);
-		var source = fullSource.toString();
+		var source = finalizedSource;
 
 		GlCompat.safeShaderSource(handle, source);
 		GL20.glCompileShader(handle);
@@ -135,5 +141,28 @@ public class Compilation {
 
 	public static boolean compiledSuccessfully(int handle) {
 		return GL20.glGetShaderi(handle, GL20.GL_COMPILE_STATUS) == GL20.GL_TRUE;
+	}
+
+	@Nullable
+	public String getFinalizedSource() {
+		return finalizedSource;
+	}
+
+	public void finalizeSourceIfNeeded() {
+		if (this.finalizedSource == null) {
+			this.finalizedSource = fullSource.toString();
+		}
+	}
+
+	public void finalizeSource() {
+		if (this.finalizedSource != null) {
+			throw new IllegalStateException("Source has already been finalized.");
+		}
+
+		this.finalizedSource = fullSource.toString();
+	}
+
+	public void replaceFinalized(String source) {
+		this.finalizedSource = source;
 	}
 }

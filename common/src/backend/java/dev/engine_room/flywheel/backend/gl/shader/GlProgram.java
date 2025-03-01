@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL31.GL_INVALID_INDEX;
 import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
 import static org.lwjgl.opengl.GL31.glUniformBlockBinding;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3fc;
 import org.joml.Matrix4fc;
 import org.slf4j.Logger;
@@ -33,11 +34,16 @@ public class GlProgram extends GlObject {
 
 	private final Object2IntMap<String> uniformLocationCache = new Object2IntOpenHashMap<>();
 
+	@Nullable
+	private Runnable onBind = null;
+
 	public GlProgram(int handle) {
 		handle(handle);
 	}
 
 	public void bind() {
+		if (this.onBind != null) onBind.run();
+
 		ProgramManager.glUseProgram(handle());
 	}
 
@@ -137,6 +143,10 @@ public class GlProgram extends GlObject {
 		}
 
 		glUniform1i(uniform, value);
+	}
+
+	public void onBind(Runnable r) {
+		this.onBind = r;
 	}
 
 	/**

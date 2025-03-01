@@ -3,6 +3,8 @@ package dev.engine_room.flywheel.backend.compile;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import dev.engine_room.flywheel.backend.compile.core.Compilation;
+
 import org.jetbrains.annotations.Nullable;
 
 import dev.engine_room.flywheel.api.instance.Instance;
@@ -12,9 +14,9 @@ import dev.engine_room.flywheel.backend.glsl.SourceComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public record Pipeline(ResourceLocation vertexMain, ResourceLocation fragmentMain,
-					   InstanceAssembler assembler, String compilerMarker, Consumer<GlProgram> onLink) {
+					   InstanceAssembler assembler, String compilerMarker, Consumer<GlProgram> onLink, Consumer<Compilation[]> preCompile) {
 
-	@FunctionalInterface
+    @FunctionalInterface
 	public interface InstanceAssembler {
 		/**
 		 * Generate the source component necessary to convert a packed {@link Instance} into its shader representation.
@@ -39,6 +41,7 @@ public record Pipeline(ResourceLocation vertexMain, ResourceLocation fragmentMai
 		private String compilerMarker;
 		@Nullable
 		private Consumer<GlProgram> onLink;
+		private Consumer<Compilation[]> preCompile = a -> {};
 
 		public Builder vertexMain(ResourceLocation shader) {
 			this.vertexMain = shader;
@@ -65,13 +68,19 @@ public record Pipeline(ResourceLocation vertexMain, ResourceLocation fragmentMai
 			return this;
 		}
 
+		public Builder preCompile(Consumer<Compilation[]> preCompile) {
+			this.preCompile = preCompile;
+			return this;
+		}
+
 		public Pipeline build() {
 			Objects.requireNonNull(vertexMain);
 			Objects.requireNonNull(fragmentMain);
 			Objects.requireNonNull(assembler);
 			Objects.requireNonNull(compilerMarker);
 			Objects.requireNonNull(onLink);
-			return new Pipeline(vertexMain, fragmentMain, assembler, compilerMarker, onLink);
+			Objects.requireNonNull(preCompile);
+			return new Pipeline(vertexMain, fragmentMain, assembler, compilerMarker, onLink, preCompile);
 		}
 	}
 }

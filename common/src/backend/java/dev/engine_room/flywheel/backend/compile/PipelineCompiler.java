@@ -174,6 +174,7 @@ public final class PipelineCompiler {
 								.source())
 						.with((key, fetcher) -> (key.useCutout() ? CUTOUT : fetcher.get(CutoutShaders.OFF.source())))
 						.withResource(pipeline.fragmentMain()))
+				.preCompile(pipeline.preCompile())
 				.preLink((key, program) -> {
 					program.bindAttribLocation("_flw_aPos", 0);
 					program.bindAttribLocation("_flw_aColor", 1);

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -18,22 +19,14 @@ public class ShaderCache {
 	public ShaderCache() {
 	}
 
-	public GlShader compile(GlslVersion glslVersion, ShaderType shaderType, String name, Consumer<Compilation> callback, List<SourceComponent> sourceComponents) {
-		var key = new ShaderKey(glslVersion, shaderType, name);
+	public GlShader compile(GlslVersion glslVersion, ShaderType shaderType, String name, Compilation compilation) {
+		var key = new ShaderKey(glslVersion, shaderType, name, Objects.requireNonNull(compilation.getFinalizedSource(), "Source has not been finalized."));
 		var cached = inner.get(key);
 		if (cached != null) {
 			return cached.unwrap();
 		}
 
-		Compilation ctx = new Compilation();
-		ctx.version(glslVersion);
-		ctx.define(shaderType.define);
-
-		callback.accept(ctx);
-
-		expand(sourceComponents, ctx::appendComponent);
-
-		ShaderResult out = ctx.compile(shaderType, name);
+		ShaderResult out = compilation.compile(shaderType, name);
 		inner.put(key, out);
 		return out.unwrap();
 	}
@@ -47,7 +40,7 @@ public class ShaderCache {
 		inner.clear();
 	}
 
-	private static void expand(List<SourceComponent> rootSources, Consumer<SourceComponent> out) {
+	public static void expand(List<SourceComponent> rootSources, Consumer<SourceComponent> out) {
 		var included = new LinkedHashSet<SourceComponent>(); // use hash set to deduplicate. linked to preserve order
 		for (var component : rootSources) {
 			recursiveDepthFirstInclude(included, component);
@@ -63,6 +56,6 @@ public class ShaderCache {
 		included.addAll(component.included());
 	}
 
-	private record ShaderKey(GlslVersion glslVersion, ShaderType shaderType, String name) {
+	private record ShaderKey(GlslVersion glslVersion, ShaderType shaderType, String name, String source) {
 	}
 }

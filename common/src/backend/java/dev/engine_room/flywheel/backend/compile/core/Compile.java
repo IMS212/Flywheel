@@ -120,23 +120,34 @@ public class Compile<K> {
 			});
 		}
 
-		private GlShader compile(K key, ShaderCache compiler, ShaderSources loader) {
+		private GlShader compile(K key, ShaderCache compiler, Compilation cb) {
 			long start = System.nanoTime();
 
+			long end = System.nanoTime();
+
+			var name = nameMapper.apply(key);
+			var out = compiler.compile(glslVersion, shaderType, name, cb);
+
+			FlwPrograms.LOGGER.debug("Compiled {} in {}", name, StringUtil.formatTime(end - start));
+
+			return out;
+		}
+
+		public Compilation finishEditing(K key, ShaderSources loader) {
 			var components = new ArrayList<SourceComponent>();
 			for (var fetcher : fetchers) {
 				components.add(fetcher.apply(key, loader));
 			}
 
 			Consumer<Compilation> cb = ctx -> compilationCallbacks.accept(key, ctx);
-			var name = nameMapper.apply(key);
-			var out = compiler.compile(glslVersion, shaderType, name, cb, components);
 
-			long end = System.nanoTime();
+			Compilation ctx = new Compilation();
+			ctx.version(glslVersion);
+			ctx.define(shaderType.define);
+			cb.accept(ctx);
+			ShaderCache.expand(components, ctx::appendComponent);
 
-			FlwPrograms.LOGGER.debug("Compiled {} in {}", name, StringUtil.formatTime(end - start));
-
-			return out;
+			return ctx;
 		}
 	}
 
@@ -146,6 +157,7 @@ public class Compile<K> {
 		};
 		private BiConsumer<K, GlProgram> preLink = (k, p) -> {
 		};
+		private Consumer<Compilation[]> preCompile;
 
 		public CompilationHarness<K> harness(String marker, ShaderSources sources) {
 			return new CompilationHarness<>(marker, sources, this);
@@ -169,6 +181,11 @@ public class Compile<K> {
 			return this;
 		}
 
+		public ProgramStitcher<K> preCompile(Consumer<Compilation[]> preCompile) {
+			this.preCompile = preCompile;
+			return this;
+		}
+
 		@Override
 		public GlProgram compile(K key, ShaderSources loader, ShaderCache shaderCache, ProgramLinker programLinker) {
 			if (compilers.isEmpty()) {
@@ -179,8 +196,20 @@ public class Compile<K> {
 
 			List<GlShader> shaders = new ArrayList<>();
 
-			for (ShaderCompiler<K> compiler : compilers.values()) {
-				shaders.add(compiler.compile(key, shaderCache, loader));
+			Compilation[] sources = new Compilation[ShaderType.values().length];
+
+			for (Map.Entry<ShaderType, ShaderCompiler<K>> compiler : compilers.entrySet()) {
+				sources[compiler.getKey().ordinal()] = compiler.getValue().finishEditing(key, loader);
+			}
+
+			if (preCompile != null) {
+				preCompile.accept(sources);
+			}
+
+			for (Map.Entry<ShaderType, ShaderCompiler<K>> compiler : compilers.entrySet()) {
+				Compilation cb = sources[compiler.getKey().ordinal()];
+				cb.finalizeSourceIfNeeded();
+				shaders.add(compiler.getValue().compile(key, shaderCache, cb));
 			}
 
 			var out = programLinker.link(shaders, p -> preLink.accept(key, p));
