@@ -45,7 +45,7 @@ public class IndirectPrograms extends AtomicReferenceCounted {
 	private final CompilationHarness<ResourceLocation> utils;
 	private final OitPrograms oitPrograms;
 
-	private IndirectPrograms(PipelineCompiler pipeline, CompilationHarness<InstanceType<?>> culling, CompilationHarness<ResourceLocation> utils, OitPrograms oitPrograms) {
+	protected IndirectPrograms(PipelineCompiler pipeline, CompilationHarness<InstanceType<?>> culling, CompilationHarness<ResourceLocation> utils, OitPrograms oitPrograms) {
 		this.pipeline = pipeline;
 		this.culling = culling;
 		this.utils = utils;

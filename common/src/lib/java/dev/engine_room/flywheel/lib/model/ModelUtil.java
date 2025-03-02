@@ -50,13 +50,13 @@ public final class ModelUtil {
 			return chunkMaterial;
 		}
 
-		if (renderType == Sheets.translucentCullBlockSheet() || renderType == Sheets.translucentItemSheet()) {
+		if (renderType == Sheets.cutoutBlockSheet() || renderType == Sheets.translucentItemSheet()) {
 			return Materials.CUTOUT_BLOCK;
 		}
 		if (renderType == RenderType.glint() || renderType == RenderType.glintTranslucent()) {
 			return Materials.GLINT;
 		}
-		if (renderType == RenderType.entityGlint() || renderType == RenderType.entityGlintDirect()) {
+		if (renderType == RenderType.entityGlint() || renderType == RenderType.armorEntityGlint()) {
 			return Materials.GLINT_ENTITY;
 		}
 		return null;

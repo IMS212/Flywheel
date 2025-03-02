@@ -193,6 +193,6 @@ public final class FlwCommands {
 
 	// Client version of BlockPosArgument.getBlockPos
 	private static BlockPos getBlockPos(CommandContext<FabricClientCommandSource> context, String name) {
-		return context.getArgument(name, Coordinates.class).getBlockPos(context.getSource().getPlayer().createCommandSourceStack());
+		return context.getSource().getPlayer().blockPosition(); // TODO: horribly incorrect
 	}
 }

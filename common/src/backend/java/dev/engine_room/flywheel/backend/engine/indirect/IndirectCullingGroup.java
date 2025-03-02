@@ -47,7 +47,7 @@ public class IndirectCullingGroup<I extends Instance> {
 	private boolean needsDrawSort;
 	private int instanceCountThisFrame;
 
-	IndirectCullingGroup(InstanceType<I> instanceType, IndirectPrograms programs) {
+	public IndirectCullingGroup(InstanceType<I> instanceType, IndirectPrograms programs) {
 		this.instanceType = instanceType;
 		instanceStride = MoreMath.align4(instanceType.layout()
 				.byteSize());

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import net.minecraft.util.ARGB;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -26,7 +28,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
@@ -41,7 +42,8 @@ public class SignVisual extends AbstractBlockEntityVisual<SignBlockEntity> imple
 	private static final Vec3 TEXT_OFFSET = new Vec3(0.0, 0.3333333432674408, 0.046666666865348816);
 	private static final Font FONT = Minecraft.getInstance().font;
 
-	private static final RendererReloadCache<WoodType, ModelTree> SIGN_MODELS = new RendererReloadCache<>(SignVisual::createSignModel);
+	private static final RendererReloadCache<WoodType, ModelTree> SIGN_MODELS_STANDING = new RendererReloadCache<>(SignVisual::createSignModel);
+	private static final RendererReloadCache<WoodType, ModelTree> SIGN_MODELS_WALL = new RendererReloadCache<>(SignVisual::createSignModelWall);
 
 	private static final Material MATERIAL = SimpleMaterial.builder()
 			.cutout(CutoutShaders.ONE_TENTH)
@@ -77,7 +79,7 @@ public class SignVisual extends AbstractBlockEntityVisual<SignBlockEntity> imple
 		WoodType woodType = SignBlock.getWoodType(block);
 		var isStanding = block instanceof StandingSignBlock;
 
-		instances = InstanceTree.create(ctx.instancerProvider(), SIGN_MODELS.get(woodType));
+		instances = InstanceTree.create(ctx.instancerProvider(), isStanding ? SIGN_MODELS_STANDING.get(woodType) : SIGN_MODELS_WALL.get(woodType));
 
 		// Maybe use a separate model tree?
 		instances.childOrThrow("stick")
@@ -104,7 +106,11 @@ public class SignVisual extends AbstractBlockEntityVisual<SignBlockEntity> imple
 	}
 
 	private static ModelTree createSignModel(WoodType woodType) {
-		return ModelTrees.of(ModelLayers.createSignModelName(woodType), Sheets.getSignMaterial(woodType), MATERIAL);
+		return ModelTrees.of(ModelLayers.createStandingSignModelName(woodType), Sheets.getSignMaterial(woodType), MATERIAL);
+	}
+
+	private static ModelTree createSignModelWall(WoodType woodType) {
+		return ModelTrees.of(ModelLayers.createWallSignModelName(woodType), Sheets.getSignMaterial(woodType), MATERIAL);
 	}
 
 	@Override
@@ -244,10 +250,10 @@ public class SignVisual extends AbstractBlockEntityVisual<SignBlockEntity> imple
 			return 0xFFF0EBCC;
 		}
 
-		int r = (int) ((double) FastColor.ARGB32.red(colorArgb) * 0.4);
-		int g = (int) ((double) FastColor.ARGB32.green(colorArgb) * 0.4);
-		int b = (int) ((double) FastColor.ARGB32.blue(colorArgb) * 0.4);
-		return FastColor.ARGB32.color(0, r, g, b);
+		int r = (int) ((double) ARGB.red(colorArgb) * 0.4);
+		int g = (int) ((double) ARGB.green(colorArgb) * 0.4);
+		int b = (int) ((double) ARGB.blue(colorArgb) * 0.4);
+		return ARGB.color(0, r, g, b);
 	}
 
 	private static boolean hasObfuscation(FormattedCharSequence text) {

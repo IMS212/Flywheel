@@ -24,8 +24,8 @@ public final class LevelUniforms extends UniformWriter {
 		ClientLevel level = context.level();
 		float partialTick = context.partialTick();
 
-		Vec3 skyColor = level.getSkyColor(context.camera().getPosition(), partialTick);
-		Vec3 cloudColor = level.getCloudColor(partialTick);
+		Vec3 skyColor = Vec3.fromRGB24(level.getSkyColor(context.camera().getPosition(), partialTick));
+		Vec3 cloudColor = Vec3.fromRGB24(level.getCloudColor(partialTick));
 		ptr = writeVec4(ptr, (float) skyColor.x, (float) skyColor.y, (float) skyColor.z, 1f);
 		ptr = writeVec4(ptr, (float) cloudColor.x, (float) cloudColor.y, (float) cloudColor.z, 1f);
 

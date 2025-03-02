@@ -42,8 +42,14 @@ public class FailedCompilation {
 	}
 
 	public String errorString() {
-		return errorStream().map(ErrorBuilder::build)
-				.collect(Collectors.joining("\n"));
+		try {
+			return errorStream().map(ErrorBuilder::build)
+					.collect(Collectors.joining("\n"));
+		} catch (Exception e) {
+			System.out.println("Failed to parse error log: " + e);
+			System.out.println(errorLog);
+			throw e;
+		}
 	}
 
 	private Stream<ErrorBuilder> errorStream() {

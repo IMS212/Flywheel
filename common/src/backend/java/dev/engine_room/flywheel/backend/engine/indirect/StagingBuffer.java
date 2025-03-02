@@ -19,51 +19,51 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 // Used https://github.com/CaffeineMC/sodium-fabric/blob/dev/src/main/java/me/jellysquid/mods/sodium/client/gl/arena/staging/MappedStagingBuffer.java
 // as a reference for implementation. Modified to be less safe and to allow for writing directly into the staging buffer.
 public class StagingBuffer {
-	private static final long DEFAULT_CAPACITY = 1024 * 1024 * 16;
-	private static final int STORAGE_FLAGS = GL45C.GL_MAP_PERSISTENT_BIT | GL45C.GL_MAP_WRITE_BIT | GL45C.GL_CLIENT_STORAGE_BIT;
-	private static final int MAP_FLAGS = GL45C.GL_MAP_PERSISTENT_BIT | GL45C.GL_MAP_WRITE_BIT | GL45C.GL_MAP_FLUSH_EXPLICIT_BIT | GL45C.GL_MAP_INVALIDATE_BUFFER_BIT;
+	protected static final long DEFAULT_CAPACITY = 1024 * 1024 * 16;
+	protected static final int STORAGE_FLAGS = GL45C.GL_MAP_PERSISTENT_BIT | GL45C.GL_MAP_WRITE_BIT | GL45C.GL_CLIENT_STORAGE_BIT;
+	protected static final int MAP_FLAGS = GL45C.GL_MAP_PERSISTENT_BIT | GL45C.GL_MAP_WRITE_BIT | GL45C.GL_MAP_FLUSH_EXPLICIT_BIT | GL45C.GL_MAP_INVALIDATE_BUFFER_BIT;
 
-	private static final int SSBO_ALIGNMENT = GL45.glGetInteger(GL45.GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
+	protected static final int SSBO_ALIGNMENT = GL45.glGetInteger(GL45.GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
 
-	private final int vbo;
-	private final long map;
-	private final long capacity;
-	private final IndirectPrograms programs;
+	protected final int vbo;
+	protected final long map;
+	protected final long capacity;
+	protected final IndirectPrograms programs;
 
-	private final OverflowStagingBuffer overflow = new OverflowStagingBuffer();
-	private final TransferList transfers = new TransferList();
-	private final PriorityQueue<FencedRegion> fencedRegions = new ObjectArrayFIFOQueue<>();
-	private final GlBuffer scatterBuffer = new GlBuffer(GlBufferUsage.STREAM_COPY);
-	private final ScatterList scatterList = new ScatterList();
+	protected final OverflowStagingBuffer overflow = new OverflowStagingBuffer();
+	protected final TransferList transfers = new TransferList();
+	protected final PriorityQueue<FencedRegion> fencedRegions = new ObjectArrayFIFOQueue<>();
+	protected final GlBuffer scatterBuffer = new GlBuffer(GlBufferUsage.STREAM_COPY);
+	protected final ScatterList scatterList = new ScatterList();
 
 	/**
 	 * The position in the buffer at the time of the last flush.
 	 */
-	private long start = 0;
+	protected long start = 0;
 	/**
 	 * The current position in the buffer,
 	 * incremented as transfers are enqueued.
 	 */
-	private long pos = 0;
+	protected long pos = 0;
 	/**
 	 * The number of bytes used in the buffer since the last flush,
 	 * decremented as transfers are enqueued.
 	 */
-	private long usedCapacity = 0;
+	protected long usedCapacity = 0;
 
 	/**
 	 * The number of bytes available in the buffer.
 	 * <br>
 	 * This decreases as transfers are enqueued and increases as fenced regions are reclaimed.
 	 */
-	private long totalAvailable;
+	protected long totalAvailable;
 
 	/**
 	 * A scratch buffer for when there is not enough contiguous space
 	 * in the staging buffer for the write the user wants to make.
 	 */
 	@Nullable
-	private MemoryBlock scratch;
+	protected MemoryBlock scratch;
 
 	public StagingBuffer(IndirectPrograms programs) {
 		this(DEFAULT_CAPACITY, programs);
@@ -232,7 +232,7 @@ public class StagingBuffer {
 		return scratch;
 	}
 
-	private void pushTransfer(int dstVbo, long srcOffset, long dstOffset, long size) {
+	protected void pushTransfer(int dstVbo, long srcOffset, long dstOffset, long size) {
 		if (totalAvailable < size) {
 			throw new IllegalStateException("Not enough available space to transfer");
 		}
@@ -250,7 +250,7 @@ public class StagingBuffer {
 	 * This approach is recommended by nvidia in
 	 * <a href=https://on-demand.gputechconf.com/gtc/2016/presentation/s6138-christoph-kubisch-pierre-boudier-gpu-driven-rendering.pdf>this presentation</a>
 	 */
-	private void dispatchComputeCopies() {
+	protected void dispatchComputeCopies() {
 		programs.getScatterProgram()
 				.bind();
 
@@ -275,7 +275,7 @@ public class StagingBuffer {
 		}
 	}
 
-	private void dispatchScatter(int dstVbo) {
+	protected void dispatchScatter(int dstVbo) {
 		var scatterSize = scatterList.usedBytes();
 
 		// If there's enough space in the staging buffer still, lets write the scatter in it directly.
@@ -303,13 +303,13 @@ public class StagingBuffer {
 		scatterList.reset();
 	}
 
-	private void assertMultipleOf4(long size) {
+	protected void assertMultipleOf4(long size) {
 		if (size % 4 != 0) {
 			throw new IllegalArgumentException("Size must be a multiple of 4");
 		}
 	}
 
-	private long sendCopyCommands() {
+	protected long sendCopyCommands() {
 		long usedCapacity = 0;
 
 		for (int i = 0; i < transfers.length(); i++) {
@@ -323,7 +323,7 @@ public class StagingBuffer {
 		return usedCapacity;
 	}
 
-	private void flushUsedRegion() {
+	protected void flushUsedRegion() {
 		if (pos < start) {
 			// we rolled around, need to flush 2 ranges.
 			GL45C.glFlushMappedNamedBufferRange(vbo, start, capacity - start);
@@ -333,11 +333,11 @@ public class StagingBuffer {
 		}
 	}
 
-	private record FencedRegion(GlFence fence, long capacity) {
+	protected record FencedRegion(GlFence fence, long capacity) {
 	}
 
-	private static class OverflowStagingBuffer {
-		private final int vbo;
+	protected static class OverflowStagingBuffer {
+		protected final int vbo;
 
 		public OverflowStagingBuffer() {
 			vbo = GL45C.glCreateBuffers();

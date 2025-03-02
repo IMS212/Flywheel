@@ -79,7 +79,7 @@ public final class PipelineCompiler {
 		ALL.forEach(PipelineCompiler::delete);
 	}
 
-	static PipelineCompiler create(ShaderSources sources, Pipeline pipeline, List<SourceComponent> vertexComponents, List<SourceComponent> fragmentComponents, Collection<String> extensions) {
+	public static PipelineCompiler create(ShaderSources sources, Pipeline pipeline, List<SourceComponent> vertexComponents, List<SourceComponent> fragmentComponents, Collection<String> extensions) {
 		// We could technically compile every version of light smoothness ahead of time,
 		// but that seems unnecessary as I doubt most folks will be changing this option often.
 		var harness = PIPELINE.program()

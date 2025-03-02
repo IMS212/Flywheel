@@ -93,7 +93,7 @@ public class OitFramebuffer {
 		} else {
 			GL32.glDrawBuffers(DEPTH_RANGE_DRAW_BUFFERS);
 			RenderSystem.clearColor(-far, -far, 0, 0);
-			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT, false);
+			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class OitFramebuffer {
 		} else {
 			GL32.glDrawBuffers(RENDER_TRANSMITTANCE_DRAW_BUFFERS);
 			RenderSystem.clearColor(0, 0, 0, 0);
-			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT, false);
+			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class OitFramebuffer {
 		} else {
 			GL32.glDrawBuffers(ACCUMULATE_DRAW_BUFFERS);
 			RenderSystem.clearColor(0, 0, 0, 0);
-			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT, false);
+			RenderSystem.clear(GL32.GL_COLOR_BUFFER_BIT);
 		}
 	}
 

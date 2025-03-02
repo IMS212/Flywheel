@@ -206,10 +206,13 @@ public class Compile<K> {
 				preCompile.accept(sources);
 			}
 
-			for (Map.Entry<ShaderType, ShaderCompiler<K>> compiler : compilers.entrySet()) {
-				Compilation cb = sources[compiler.getKey().ordinal()];
+			ShaderType[] V = ShaderType.values();
+
+			for (int i = 0; i < V.length; i++) {
+				Compilation cb = sources[i];
+				if (cb == null) continue;
 				cb.finalizeSourceIfNeeded();
-				shaders.add(compiler.getValue().compile(key, shaderCache, cb));
+				shaders.add(compilers.get(V[i]).compile(key, shaderCache, cb));
 			}
 
 			var out = programLinker.link(shaders, p -> preLink.accept(key, p));

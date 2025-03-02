@@ -63,11 +63,6 @@ public class MinecartVisual<T extends AbstractMinecart> extends ComponentEntityV
 	private TransformedInstance createContentsInstance() {
 		RenderShape shape = blockState.getRenderShape();
 
-		if (shape == RenderShape.ENTITYBLOCK_ANIMATED) {
-			instances.visible(false);
-			return null;
-		}
-
 		if (shape == RenderShape.INVISIBLE) {
 			return null;
 		}
@@ -122,11 +117,13 @@ public class MinecartVisual<T extends AbstractMinecart> extends ComponentEntityV
 		float nudgeZ = (((float) (randomBits >> 24 & 7L) + 0.5f) / 8.0f - 0.5F) * 0.004f;
 		stack.translate(nudgeX, nudgeY, nudgeZ);
 
-		Vec3 pos = entity.getPos(posX, posY, posZ);
+		Vec3 lPos = new Vec3(posX, posY, posZ);
+
+		Vec3 pos = ((AbstractMinecart) entity).getBehavior().getKnownMovement(lPos);
 		float pitch = Mth.lerp(partialTick, entity.xRotO, entity.getXRot());
 		if (pos != null) {
-			Vec3 offset1 = entity.getPosOffs(posX, posY, posZ, 0.3F);
-			Vec3 offset2 = entity.getPosOffs(posX, posY, posZ, -0.3F);
+			Vec3 offset1 = entity.getBehavior().getKnownMovement(lPos).add(0.3F);
+			Vec3 offset2 = entity.getBehavior().getKnownMovement(lPos).add(-0.3F);
 
 			if (offset1 == null) {
 				offset1 = pos;
@@ -201,6 +198,6 @@ public class MinecartVisual<T extends AbstractMinecart> extends ComponentEntityV
 	}
 
 	public static boolean shouldSkipRender(AbstractMinecart minecart) {
-		return minecart.getDisplayBlockState().getRenderShape() != RenderShape.ENTITYBLOCK_ANIMATED;
+		return true;//minecart.getDisplayBlockState().getRenderShape() != RenderShape.ENTITYBLOCK_ANIMATED;
 	}
 }

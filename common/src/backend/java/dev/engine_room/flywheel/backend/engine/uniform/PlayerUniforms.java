@@ -1,5 +1,7 @@
 package dev.engine_room.flywheel.backend.engine.uniform;
 
+import net.minecraft.util.ARGB;
+
 import org.jetbrains.annotations.Nullable;
 
 import dev.engine_room.flywheel.api.backend.RenderContext;
@@ -10,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -65,9 +66,9 @@ public final class PlayerUniforms extends UniformWriter {
 			Integer color = team.getColor().getColor();
 
 			if (color != null) {
-				int red = FastColor.ARGB32.red(color);
-				int green = FastColor.ARGB32.green(color);
-				int blue = FastColor.ARGB32.blue(color);
+				int red = ARGB.red(color);
+				int green = ARGB.green(color);
+				int blue = ARGB.blue(color);
 				return writeVec4(ptr, red / 255f, green / 255f, blue / 255f, 1f);
 			} else {
 				return writeVec4(ptr, 1f, 1f, 1f, 1f);
@@ -81,7 +82,7 @@ public final class PlayerUniforms extends UniformWriter {
 		ClientLevel level = player.clientLevel;
 		int blockBrightness = level.getBrightness(LightLayer.BLOCK, player.blockPosition());
 		int skyBrightness = level.getBrightness(LightLayer.SKY, player.blockPosition());
-		int maxBrightness = level.getMaxLightLevel();
+		int maxBrightness = 15;// level.getMaxLightLevel();
 
 		return writeVec2(ptr, (float) blockBrightness / (float) maxBrightness,
 				(float) skyBrightness / (float) maxBrightness);

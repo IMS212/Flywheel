@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 
 @Mixin(LevelRenderer.class)
 abstract class FixFabulousDepthMixin {
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V", ordinal = 1))
+	//@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V", ordinal = 1))
 	private void flywheel$disableTransparencyShaderDepth(CallbackInfo ci) {
 		GlStateManager._depthMask(false);
 	}

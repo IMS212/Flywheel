@@ -89,7 +89,8 @@ public abstract class AbstractEntityVisual<T extends Entity> extends AbstractVis
 	}
 
 	public boolean isVisible(FrustumIntersection frustum) {
-		return entity.noCulling || visibilityTester.check(frustum);
+		// TODO! This needs to check shouldRender
+		return visibilityTester.check(frustum);
 	}
 
 	protected int computePackedLight(float partialTick) {

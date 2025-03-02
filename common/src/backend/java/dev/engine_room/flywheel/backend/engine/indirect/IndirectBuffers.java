@@ -67,7 +67,7 @@ public class IndirectBuffers {
 	public final ResizableStorageArray model;
 	public final ResizableStorageArray draw;
 
-	IndirectBuffers(long instanceStride) {
+	public IndirectBuffers(long instanceStride) {
 		this.multiBindBlock = MemoryBlock.calloc(BUFFERS_SIZE_BYTES, 1);
 
 		objectStorage = new ObjectStorage(instanceStride);
@@ -76,7 +76,7 @@ public class IndirectBuffers {
 		draw = new ResizableStorageArray(DRAW_COMMAND_STRIDE, DRAW_GROWTH_FACTOR);
 	}
 
-	void updateCounts(int instanceCount, int modelCount, int drawCount) {
+	public void updateCounts(int instanceCount, int modelCount, int drawCount) {
 		drawInstanceIndex.ensureCapacity(instanceCount);
 		model.ensureCapacity(modelCount);
 		draw.ensureCapacity(drawCount);

@@ -1,6 +1,14 @@
 package dev.engine_room.flywheel.lib.model.baked;
 
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadTransform;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -12,8 +20,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
 import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
-import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -106,11 +112,12 @@ class UniversalMeshEmitter implements VertexConsumer {
 		currentDelegate.putBulkData(pose, quad, brightness, red, green, blue, alpha, lightmap, packedOverlay, readAlpha);
 	}
 
-	private class WrapperModel extends ForwardingBakedModel {
-		private final RenderContext.QuadTransform quadTransform = quad -> {
+	private class WrapperModel implements BakedModel {
+		private final QuadTransform quadTransform = quad -> {
 			UniversalMeshEmitter.this.prepareForGeometry(quad.material());
 			return true;
 		};
+		private @Nullable BakedModel wrapped;
 
 		public void setWrapped(@Nullable BakedModel wrapped) {
 			this.wrapped = wrapped;
@@ -122,10 +129,40 @@ class UniversalMeshEmitter implements VertexConsumer {
 		}
 
 		@Override
-		public void emitBlockQuads(BlockAndTintGetter level, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
-			context.pushTransform(quadTransform);
-			super.emitBlockQuads(level, state, pos, randomSupplier, context);
-			context.popTransform();
+		public void emitBlockQuads(QuadEmitter emitter, BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, Predicate<@Nullable Direction> cullTest) {
+			emitter.pushTransform(quadTransform);
+			BakedModel.super.emitBlockQuads(emitter, blockView, state, pos, randomSupplier, cullTest);
+			emitter.popTransform();
+		}
+
+		@Override
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, RandomSource random) {
+			return wrapped.getQuads(state, direction, random);
+		}
+
+		@Override
+		public boolean useAmbientOcclusion() {
+			return wrapped.useAmbientOcclusion();
+		}
+
+		@Override
+		public boolean isGui3d() {
+			return wrapped.isGui3d();
+		}
+
+		@Override
+		public boolean usesBlockLight() {
+			return wrapped.usesBlockLight();
+		}
+
+		@Override
+		public TextureAtlasSprite getParticleIcon() {
+			return wrapped.getParticleIcon();
+		}
+
+		@Override
+		public ItemTransforms getTransforms() {
+			return wrapped.getTransforms();
 		}
 	}
 }

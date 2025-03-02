@@ -38,7 +38,7 @@ public class SourceLines implements CharSequence {
 	}
 
 	public String lineString(int lineNo) {
-		return lines.get(lineNo);
+		return lines.size() <= lineNo ? "unknown" : lines.get(lineNo);
 	}
 
 	public int lineStartIndex(int lineNo) {

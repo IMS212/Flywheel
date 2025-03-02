@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
@@ -33,6 +36,7 @@ public class Compilation {
 	@Nullable
 	private String finalizedSource = null;
 	private int generatedLines = 0;
+	private Set<String> defines = new ObjectArraySet<>();
 
 	public ShaderResult compile(ShaderType shaderType, String name) {
 		if (this.finalizedSource == null) {
@@ -81,12 +85,14 @@ public class Compilation {
 				.append(' ')
 				.append(value)
 				.append('\n');
+		defines.add(key);
 	}
 
 	public void define(String key) {
 		fullSource.append("#define ")
 				.append(key)
 				.append('\n');
+		defines.add(key);
 	}
 
 	public void appendComponent(SourceComponent component) {
@@ -95,6 +101,14 @@ public class Compilation {
 		appendHeader(component, source);
 
 		fullSource.append(source);
+	}
+
+	public boolean isDefined(String key) {
+		return defines.contains(key);
+	}
+
+	public Set<String> getDefines() {
+		return defines;
 	}
 
 	private void appendHeader(SourceComponent component, String source) {
